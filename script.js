@@ -67,50 +67,47 @@ function player(marker, count){
     };
 }
 
+
+
 const domControl = (() => {
     const buttons = document.querySelectorAll(".gameBoard button");
     const indicator = document.getElementById("indicator"); 
-    let currentPlayer = "X"; 
+    let currentPlayer = "One"; 
     let moveCount = 0;
 
     buttons.forEach((button, index) => {
         button.style.backgroundColor = "azure";  
 
         button.addEventListener("click", () => {
-            if (button.textContent === "") { 
-                button.style.backgroundColor = currentPlayer === "X" ? "lightblue" : "red";
-
-                let row = Math.floor(index / 3);
-                let col = index % 3;
-
-                gameBoard.getBoard()[row][col].addMarker(currentPlayer);
-
-                moveCount++;
-                if (gameBoard.checkWinning("X")) {
-                    indicator.textContent = "Player One wins!";
-                    return;
-                } else if (gameBoard.checkWinning("O")) {
-                    indicator.textContent = "Player One wins!";
-                    return;
-                }
-
-                currentPlayer = currentPlayer === "X" ? "O" : "X";
-                if(currentPlayer === "X"){
-                    indicator.textContent = "Player One's Turn";
-                }
-                else{
-                    indicator.textContent = "Player Two's Turn";
-                }
-
-                if (moveCount === 9) {
-                    indicator.textContent = "It's a draw!";
-                }
+            if (button.style.backgroundColor !== "azure") { 
+                indicator.textContent = "This spot is already taken! Choose another.";
+                return;
             }
+            button.style.backgroundColor = currentPlayer === "One" ? "lightblue" : "red";
+
+            let row = Math.floor(index / 3);
+            let col = index % 3;
+            gameBoard.getBoard()[row][col].addMarker(currentPlayer);
+
+            moveCount++;
+
+            if (gameBoard.checkWinning(currentPlayer)) {
+                indicator.textContent = `Player ${currentPlayer} wins!`;
+                highlightWinningCells();
+                return;
+            }
+
+            if (moveCount === 9) {
+                indicator.textContent = "It's a draw!";
+                return;
+            }
+
+            currentPlayer = currentPlayer === "One" ? "Two" : "One";
+            indicator.textContent = `Player ${currentPlayer}'s Turn`;
         });
     });
 
     const again = document.getElementById("again");
-
     again.addEventListener("click", () => {
         buttons.forEach((button) => {
             button.style.backgroundColor = "azure";
