@@ -25,17 +25,6 @@ const gameBoard = (() => {
 
     const getBoard = () => board;
     
-    const insertMarker = (x, y, marker) => {
-        if (board[x][y].getValue() != 0) {
-            console.log("This cell is already taken");
-            let a = parseInt(prompt("Enter other X coordinate"));
-            let b = parseInt(prompt("Enter other Y coordinate"));
-            insertMarker(a, b, marker);
-        }
-        else{
-            board[x][y].addMarker(marker);
-        }
-    }
     
     const checkWinning = (player) => {
         for (let i = 0; i < rows; i++) {
@@ -58,11 +47,17 @@ const gameBoard = (() => {
         return false;
     }
 
-    const printBoard = () => {
-        console.table(board.map(row => row.map(cell => cell.getValue())));
-    };
+    const reset = () => {
+        for (let i = 0; i < rows; i++) {
+            board[i] = []; 
+            for (let j = 0; j < rows; j++) {
+              board[i].push(cell());
+            }
+        }
+    }
 
-    return { getBoard, printBoard, insertMarker, checkWinning };
+
+    return { getBoard, checkWinning, reset };
 })();
 
 function player(marker, count){
@@ -72,41 +67,58 @@ function player(marker, count){
     };
 }
 
-const gameControl = (() => {
-    const playerOne = player('X', 0);
-    const playerTwo = player('O', 0);
+const domControl = (() => {
+    const buttons = document.querySelectorAll(".gameBoard button");
+    const indicator = document.getElementById("indicator"); 
+    let currentPlayer = "X"; 
+    let moveCount = 0;
 
-    let count = 0;
+    buttons.forEach((button, index) => {
+        button.style.backgroundColor = "azure";  
 
-    while(count != 9){
-        gameBoard.printBoard();
-        let x = parseInt(prompt("Enter X coordinate"));
-        let y = parseInt(prompt("Enter Y coordinate"));
+        button.addEventListener("click", () => {
+            if (button.textContent === "") { 
+                button.style.backgroundColor = currentPlayer === "X" ? "lightblue" : "red";
 
-        
-        if(playerOne.count == playerTwo.count){
-            gameBoard.insertMarker(x, y, playerOne.marker);
-            if(gameBoard.checkWinning()){
-                gameBoard.printBoard();
-                console.log("Player 1 wins");
-                break;
+                let row = Math.floor(index / 3);
+                let col = index % 3;
+
+                gameBoard.getBoard()[row][col].addMarker(currentPlayer);
+
+                moveCount++;
+                if (gameBoard.checkWinning("X")) {
+                    indicator.textContent = "Player One wins!";
+                    return;
+                } else if (gameBoard.checkWinning("O")) {
+                    indicator.textContent = "Player One wins!";
+                    return;
+                }
+
+                currentPlayer = currentPlayer === "X" ? "O" : "X";
+                if(currentPlayer === "X"){
+                    indicator.textContent = "Player One's Turn";
+                }
+                else{
+                    indicator.textContent = "Player Two's Turn";
+                }
+
+                if (moveCount === 9) {
+                    indicator.textContent = "It's a draw!";
+                }
             }
-            else{
-                playerOne.count++;
-            }    
-        }
+        });
+    });
 
-        else{
-            gameBoard.insertMarker(x, y, playerTwo.marker);
-            if(gameBoard.checkWinning()){
-                gameBoard.printBoard();
-                console.log("Player 2 wins");
-                break;
-            }
-            else{
-                playerTwo.count++;
-            }   
-        }
-        count++;
-    }
+    const again = document.getElementById("again");
+
+    again.addEventListener("click", () => {
+        buttons.forEach((button) => {
+            button.style.backgroundColor = "azure";
+            button.textContent = "";
+        });
+        indicator.textContent = "Player One's Turn";
+        currentPlayer = "X";
+        moveCount = 0;
+        gameBoard.reset();
+    });
 })();
